@@ -1,7 +1,7 @@
 # WAN 2.2 Helper Scripts
 
 A collection of small Bash utilities for preparing video datasets. Most scripts
-rely on `ffmpeg`/`ffprobe`; some also require ImageMagick or Perl.
+rely on `ffmpeg`/`ffprobe`; some also require ImageMagick or Perl. Windows users can use the corresponding PowerShell versions (`*.ps1`) that mirror the Bash scripts.
 
 ## Scripts
 
@@ -16,6 +16,8 @@ rely on `ffmpeg`/`ffprobe`; some also require ImageMagick or Perl.
 | `merge_lastframe_into_main.sh` | Merge caption text from `_lastFrame.txt` files into the main caption files, normalizing spacing. |
 | `lmstudio_captioner` | Local web app that captions videos via LM Studio's API. Assistant prefill only appears as a separate pretend reply due to LM Studio API limits; load a model in LM Studio, enable the API in the Developer tab, and paste the model name into the app. |
 | `multi_video_sync_compare.html` | Browser-based tool for loading multiple videos, adjusting per-video offsets, and keeping playback synchronized for side-by-side comparison. |
+
+Each script also includes a Windows-friendly PowerShell version; replace the `.sh` extension with `.ps1` to use it on Windows.
 
 ## License
 
