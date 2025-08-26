@@ -1,6 +1,6 @@
-
 #!/usr/bin/env bash
-# merge_lastframe_into_main.sh
+# Merge caption text from *_lastFrame.txt files into their corresponding
+# main .txt files, normalizing spacing and newlines.
 set -euo pipefail
 shopt -s nullglob nocaseglob
 

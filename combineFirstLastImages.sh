@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# combine_first_last_frames.sh
-# Requires: ImageMagick (magick OR convert/identify)
+# Combine the first and last frame images into a single side-by-side
+# composite separated by a line. Requires ImageMagick (magick or
+# convert/identify).
 set -euo pipefail
 shopt -s nullglob nocaseglob
 

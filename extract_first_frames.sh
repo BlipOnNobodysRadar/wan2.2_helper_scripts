@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# extract_first_frames.sh
-# extracts the first frame of every mp4 in the directory and makes a matching .txt file
+# Extract the first frame of every MP4 in the current directory and create
+# a matching empty .txt file. Useful for preparing caption placeholders.
 set -euo pipefail
 shopt -s nullglob nocaseglob
 
