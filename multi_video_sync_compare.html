@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi‑Video Sync Compare</title>
+<style>
+  :root {
+    --gap: 8px;
+    --columns: 2;
+    --accent: #3b82f6;
+    --bg: #0b0f17;
+    --fg: #e5e7eb;
+    --muted: #9ca3af;
+    --tile-bg: #111827;
+    --tile-br: #1f2937;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(8px);
+    background: linear-gradient(180deg, rgba(11,15,23,0.9), rgba(11,15,23,0.7));
+    border-bottom: 1px solid var(--tile-br);
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 10px 12px; }
+  h1 { font-size: 18px; margin: 0 0 6px 0; letter-spacing: 0.2px; }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--gap);
+    align-items: center;
+  }
+  .controls > * { min-width: 0; }
+  .row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--gap); align-items: center; }
+  .btn, label.btnlike, .seg > button {
+    background: #111827;
+    color: var(--fg);
+    border: 1px solid var(--tile-br);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn:hover, label.btnlike:hover, .seg > button:hover { border-color: #334155; }
+  .btn:active, .seg > button:active { transform: translateY(0.5px); }
+  input[type="file"] { display: none; }
+  .seg { display: inline-flex; border: 1px solid var(--tile-br); border-radius: 8px; overflow: hidden; }
+  .seg > button { border: none; border-right: 1px solid var(--tile-br); background: #0f172a; }
+  .seg > button:last-child { border-right: none; }
+  .seg > button.active { background: #172554; border-color: #1e3a8a; }
+  .group {
+    display: inline-flex; gap: var(--gap); align-items: center; padding: 6px 8px; border: 1px solid var(--tile-br); border-radius: 8px; background: #0b1220;
+  }
+  .group label { font-size: 12px; color: var(--muted); }
+  input[type="range"] { width: 200px; }
+  input[type="number"] { width: 6.5em; padding: 6px; border-radius: 6px; border: 1px solid var(--tile-br); background: #0b1220; color: var(--fg); }
+  select { padding: 6px; border-radius: 8px; border: 1px solid var(--tile-br); background: #0b1220; color: var(--fg); }
+  .grid {
+    --columns: 2;
+    display: grid; gap: var(--gap); padding: 12px;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  }
+  .tile {
+    background: var(--tile-bg); border: 1px solid var(--tile-br); border-radius: 10px; overflow: hidden;
+    display: flex; flex-direction: column; min-height: 160px;
+  }
+  .tile header {
+    position: static; backdrop-filter: none; background: #0f172a; border-bottom: 1px solid var(--tile-br);
+  }
+  .tile h3 { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { font-size: 11px; color: var(--muted); }
+  .tile .bar { display: flex; justify-content: space-between; gap: var(--gap); align-items: center; padding: 8px 10px; }
+  video { width: 100%; height: auto; background: #000; display: block; object-fit: contain; aspect-ratio: 16 / 9; }
+  .tile footer { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: var(--gap); border-top: 1px solid var(--tile-br); }
+  .badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; border: 1px solid var(--tile-br); color: var(--muted); }
+  .badge.master { color: #93c5fd; border-color: #1d4ed8; }
+  .dropzone {
+    grid-column: 1 / -1;
+    padding: 10px; border: 2px dashed #334155; border-radius: 10px; color: var(--muted);
+    text-align: center; background: #0b1220;
+  }
+  .dropzone.dragover { border-color: #60a5fa; color: #93c5fd; background: #0b1220aa; }
+  .help { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .link { color: #93c5fd; text-decoration: underline; cursor: pointer; }
+  .hidden { display: none !important; }
+  .grow { flex: 1; min-width: 80px; }
+  .range { display: inline-flex; align-items: center; gap: 8px; }
+  .range input[type="range"] { width: 240px; }
+  .time { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
+  .url-add { display: inline-flex; gap: 8px; align-items: center; }
+  .url-add input[type="text"] { width: 300px; padding: 8px; border-radius: 8px; border: 1px solid var(--tile-br); background:#0b1220; color: var(--fg); }
+  .kbd { font: 11px/1 monospace; border: 1px solid var(--tile-br); padding: 2px 4px; border-radius: 4px; background: #0b1220; color: var(--muted); }
+  @media (max-width: 800px) {
+    .controls { grid-template-columns: repeat(6, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Multi‑Video Sync Compare</h1>
+    <div class="controls">
+      <div class="row">
+        <label class="btnlike" for="fileInput">➕ Add Videos</label>
+        <input id="fileInput" type="file" accept="video/*" multiple>
+        <div class="url-add">
+          <input id="urlInput" type="text" placeholder="Paste video URL (same-origin or CORS enabled)">
+          <button id="addUrlBtn" class="btn">Add URL</button>
+        </div>
+        <div class="group">
+          <label>Columns</label>
+          <input id="cols" type="number" min="1" max="6" step="1" value="2" title="Grid columns">
+        </div>
+        <div class="group">
+          <label>Master</label>
+          <select id="masterSel" title="Choose master video for sync"></select>
+        </div>
+        <div class="group">
+          <label>Rate</label>
+          <input id="rate" type="range" min="0.25" max="2.0" step="0.05" value="1">
+          <span id="rateVal" class="time">1.00×</span>
+        </div>
+        <div class="group">
+          <label>Frame step (s)</label>
+          <input id="frameStep" type="number" min="0.005" step="0.005" value="0.0333" title="Seconds to step when using comma/period keys">
+        </div>
+        <div class="row">
+          <div class="seg" role="group" aria-label="Playback">
+            <button id="playAll" title="Play (Space)">▶ Play</button>
+            <button id="pauseAll" title="Pause (Space)">⏸ Pause</button>
+            <button id="stopAll" title="Stop & reset">⏹ Stop</button>
+          </div>
+          <div class="seg" role="group" aria-label="Scrub">
+            <button id="back1" title="← -1s">−1s</button>
+            <button id="fwd1" title="→ +1s">+1s</button>
+            <button id="back5" title="Shift+← -5s">−5s</button>
+            <button id="fwd5" title="Shift+→ +5s">+5s</button>
+            <button id="stepPrev" title=", previous frame">⟨ Frame</button>
+            <button id="stepNext" title=". next frame">Frame ⟩</button>
+          </div>
+          <div class="group">
+            <label><input id="syncOn" type="checkbox" checked> Keep in sync</label>
+            <label><input id="muteAll" type="checkbox"> Mute all</label>
+            <label><input id="loopAll" type="checkbox"> Loop all</label>
+            <label><input id="fitCover" type="checkbox"> Fill tiles</label>
+          </div>
+          <div class="range grow">
+            <span id="curTime" class="time">00:00.000</span>
+            <input id="scrub" type="range" min="0" max="0" step="0.001" value="0">
+            <span id="durTime" class="time">00:00.000</span>
+          </div>
+          <div class="help">
+            <span class="link" id="toggleHelp">Shortcuts</span>
+          </div>
+        </div>
+        <div id="helpBox" class="row hidden">
+          <span class="kbd">Space</span> Play/Pause
+          <span class="kbd">←/→</span> −/+1s
+          <span class="kbd">Shift+←/→</span> −/+5s
+          <span class="kbd">,</span>/<span class="kbd">.</span> Frame −/+
+          <span class="kbd">[</span>/<span class="kbd">]</span> Rate −/+
+          <span class="kbd">M</span> Mute
+          <span class="kbd">L</span> Loop
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="dropzone" class="dropzone">Drag & drop videos here (MP4/WebM/OGG)…</div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<template id="tileTpl">
+  <div class="tile">
+    <header class="bar">
+      <div>
+        <h3 class="name"></h3>
+        <div class="meta"><span class="dim"></span> <span class="dur"></span></div>
+      </div>
+      <div class="badge">Ready</div>
+    </header>
+    <video playsinline preload="metadata"></video>
+    <footer>
+      <button class="btn makeMaster" title="Make this the master for syncing">Make Master</button>
+      <label>Offset (s): <input class="offset" type="number" step="0.01" value="0"></label>
+      <label><input class="showControls" type="checkbox"> Native controls</label>
+      <button class="btn remove">Remove</button>
+      <span class="badge master hidden">Master</span>
+    </footer>
+  </div>
+</template>
+
+<script>
+(() => {
+  /*** State ***/
+  const state = {
+    items: [], // {id, name, url, video, duration, offset, isMaster}
+    masterId: null,
+    syncOn: true,
+    muted: false,
+    loop: false,
+    rate: 1,
+    frameStep: 1/30,
+    columns: 2,
+    cover: false,
+  };
+
+  /*** DOM ***/
+  const el = id => document.getElementById(id);
+  const grid = el('grid');
+  const fileInput = el('fileInput');
+  const dropzone = el('dropzone');
+  const masterSel = el('masterSel');
+  const scrub = el('scrub');
+  const curTime = el('curTime');
+  const durTime = el('durTime');
+  const rate = el('rate');
+  const rateVal = el('rateVal');
+  const frameStep = el('frameStep');
+  const cols = el('cols');
+  const muteAll = el('muteAll');
+  const loopAll = el('loopAll');
+  const fitCover = el('fitCover');
+  const syncOn = el('syncOn');
+  const addUrlBtn = el('addUrlBtn');
+  const urlInput = el('urlInput');
+
+  /*** Utils ***/
+  const fmtTime = s => {
+    if (!isFinite(s)) return '00:00.000';
+    const sign = s < 0 ? '-' : '';
+    s = Math.max(0, Math.abs(s));
+    const ms = Math.floor((s % 1) * 1000);
+    const sec = Math.floor(s) % 60;
+    const min = Math.floor(s / 60) % 60;
+    const hr = Math.floor(s / 3600);
+    const pad = (n, w=2) => String(n).padStart(w, '0');
+    return (hr ? `${hr}:${pad(min)}:${pad(sec)}` : `${pad(min)}:${pad(sec)}.${pad(ms,3)}`);
+  };
+
+  const savePrefs = () => {
+    const prefs = {
+      rate: state.rate, frameStep: state.frameStep,
+      columns: state.columns, cover: state.cover,
+      muted: state.muted, loop: state.loop, syncOn: state.syncOn
+    };
+    localStorage.setItem('mvsc:prefs', JSON.stringify(prefs));
+  };
+  const loadPrefs = () => {
+    try {
+      const p = JSON.parse(localStorage.getItem('mvsc:prefs') || '{}');
+      Object.assign(state, p);
+      rate.value = state.rate;
+      rateVal.textContent = `${Number(state.rate).toFixed(2)}×`;
+      frameStep.value = state.frameStep;
+      cols.value = state.columns;
+      grid.style.setProperty('--columns', state.columns);
+      document.documentElement.style.setProperty('--columns', state.columns);
+      muteAll.checked = state.muted;
+      loopAll.checked = state.loop;
+      fitCover.checked = state.cover;
+      syncOn.checked = state.syncOn;
+    } catch {}
+  };
+
+  /*** Core ***/
+  function addSource(name, src, isUrl=false) {
+    const id = crypto.randomUUID();
+    const tpl = document.getElementById('tileTpl');
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    const v = node.querySelector('video');
+    const nameEl = node.querySelector('.name');
+    const dimEl = node.querySelector('.dim');
+    const durEl = node.querySelector('.dur');
+    const badge = node.querySelector('.badge');
+    const badgeMaster = node.querySelector('.badge.master');
+    const offsetInp = node.querySelector('.offset');
+    const showControls = node.querySelector('.showControls');
+    const btnRemove = node.querySelector('.remove');
+    const btnMakeMaster = node.querySelector('.makeMaster');
+
+    nameEl.textContent = name;
+    badge.textContent = 'Loading…';
+
+    // Configure video
+    v.src = src;
+    v.muted = state.muted;
+    v.loop = state.loop;
+    v.playbackRate = state.rate;
+    v.controls = false;
+    v.style.objectFit = state.cover ? 'cover' : 'contain';
+
+    v.addEventListener('loadedmetadata', () => {
+      const d = v.duration;
+      durEl.textContent = `• ${fmtTime(d)}`;
+      dimEl.textContent = `${v.videoWidth}×${v.videoHeight}`;
+      badge.textContent = 'Ready';
+      // Initialize scrub if this is master
+      if (state.masterId === id) {
+        scrub.max = isFinite(d) ? d.toFixed(3) : 0;
+        durTime.textContent = fmtTime(d);
+      }
+    }, {once:true});
+
+    v.addEventListener('timeupdate', () => {
+      if (id === state.masterId) {
+        scrub.value = v.currentTime.toFixed(3);
+        curTime.textContent = fmtTime(v.currentTime);
+        if (state.syncOn) resync();
+      }
+    });
+
+    v.addEventListener('play', () => { if (id === state.masterId && state.syncOn) playAll(); });
+    v.addEventListener('pause', () => { if (id === state.masterId && state.syncOn) pauseAll(); });
+    v.addEventListener('ratechange', () => { if (id === state.masterId) setRate(v.playbackRate); });
+
+    // Controls
+    showControls.addEventListener('change', () => { v.controls = showControls.checked; });
+    btnRemove.addEventListener('click', () => removeItem(id, node));
+    btnMakeMaster.addEventListener('click', () => setMaster(id));
+    offsetInp.addEventListener('change', () => {
+      const item = state.items.find(x => x.id === id);
+      if (item) item.offset = Number(offsetInp.value) || 0;
+      if (id === state.masterId) resync(); else syncItemToMaster(item);
+      saveOffsets();
+    });
+
+    // Insert
+    grid.appendChild(node);
+
+    // Track state
+    const it = { id, name, url: src, video: v, duration: NaN, offset: 0, isMaster: false, isUrl };
+    state.items.push(it);
+    updateMasterSelect();
+
+    // Select first as master by default
+    if (!state.masterId) setMaster(id);
+  }
+
+  function removeItem(id, node) {
+    const idx = state.items.findIndex(x => x.id === id);
+    if (idx === -1) return;
+    const it = state.items[idx];
+    // Revoke object URL if file-based
+    if (!it.isUrl && it.url.startsWith('blob:')) {
+      URL.revokeObjectURL(it.url);
+    }
+    it.video.pause();
+    node.remove();
+    state.items.splice(idx,1);
+    if (state.masterId === id) {
+      state.masterId = state.items[0]?.id || null;
+    }
+    updateMasterSelect();
+    if (!state.masterId) {
+      scrub.value = 0; scrub.max = 0; curTime.textContent = fmtTime(0); durTime.textContent = fmtTime(0);
+    }
+  }
+
+  function setMaster(id) {
+    state.masterId = id;
+    state.items.forEach(it => it.isMaster = (it.id === id));
+    // UI badges
+    Array.from(grid.children).forEach((tile, i) => {
+      const badge = tile.querySelector('.badge.master');
+      if (state.items[i] && state.items[i].id === id) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+    });
+    updateMasterSelect();
+    const m = getMaster();
+    if (m) {
+      scrub.max = isFinite(m.video.duration) ? m.video.duration.toFixed(3) : 0;
+      durTime.textContent = fmtTime(m.video.duration);
+      // Keep global rate consistent
+      setRate(state.rate);
+      resync(true);
+    }
+  }
+
+  function getMaster() {
+    return state.items.find(x => x.id === state.masterId) || null;
+  }
+
+  function updateMasterSelect() {
+    masterSel.innerHTML = '';
+    state.items.forEach(it => {
+      const opt = document.createElement('option');
+      opt.value = it.id; opt.textContent = it.name + (it.isMaster ? ' (master)' : '');
+      if (it.id === state.masterId) opt.selected = true;
+      masterSel.appendChild(opt);
+    });
+    grid.style.setProperty('--columns', state.columns);
+  }
+
+  function resync(force=false) {
+    if (!state.syncOn) return;
+    const master = getMaster();
+    if (!master) return;
+    const mt = master.video.currentTime;
+    for (const it of state.items) {
+      if (it.id === state.masterId) continue;
+      const target = mt - (Number(it.offset) || 0);
+      const diff = Math.abs((it.video.currentTime || 0) - target);
+      if (force || diff > 0.06) {
+        // Clamp to duration bounds
+        const dur = it.video.duration;
+        let t = Math.min(Math.max(target, 0), isFinite(dur) ? dur : target);
+        it.video.currentTime = t;
+      }
+      // Follow play/pause state
+      if (!master.video.paused && it.video.paused) it.video.play().catch(()=>{});
+      if (master.video.paused && !it.video.paused) it.video.pause();
+    }
+  }
+
+  function syncItemToMaster(it) {
+    const master = getMaster();
+    if (!master || !it) return;
+    const target = master.video.currentTime - (Number(it.offset) || 0);
+    const dur = it.video.duration;
+    let t = Math.min(Math.max(target, 0), isFinite(dur) ? dur : target);
+    it.video.currentTime = t;
+  }
+
+  function playAll() {
+    const master = getMaster();
+    if (!master) return;
+    master.video.play().catch(()=>{});
+    state.items.forEach(it => {
+      if (it.id !== state.masterId) it.video.play().catch(()=>{});
+    });
+  }
+
+  function pauseAll() {
+    state.items.forEach(it => it.video.pause());
+  }
+
+  function stopAll() {
+    pauseAll();
+    setTime(0);
+  }
+
+  function setTime(t) {
+    const master = getMaster();
+    if (!master) return;
+    master.video.currentTime = t;
+    state.items.forEach(it => { if (it.id !== state.masterId) syncItemToMaster(it); });
+  }
+
+  function setRate(r) {
+    state.rate = Number(r) || 1;
+    rateVal.textContent = `${state.rate.toFixed(2)}×`;
+    state.items.forEach(it => it.video.playbackRate = state.rate);
+    savePrefs();
+  }
+
+  function setMuted(m) {
+    state.muted = m;
+    state.items.forEach(it => it.video.muted = m);
+    savePrefs();
+  }
+
+  function setLoop(b) {
+    state.loop = b;
+    state.items.forEach(it => it.video.loop = b);
+    savePrefs();
+  }
+
+  function setCover(b) {
+    state.cover = b;
+    state.items.forEach(it => it.video.style.objectFit = b ? 'cover' : 'contain');
+    savePrefs();
+  }
+
+  function saveOffsets() {
+    const offs = Object.fromEntries(state.items.map(it => [it.name, it.offset]));
+    localStorage.setItem('mvsc:offsets', JSON.stringify(offs));
+  }
+
+  /*** Events ***/
+  fileInput.addEventListener('change', (e) => {
+    for (const f of e.target.files) {
+      const url = URL.createObjectURL(f);
+      addSource(f.name, url, false);
+    }
+    fileInput.value = '';
+  });
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault(); dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('video/'));
+    for (const f of files) addSource(f.name, URL.createObjectURL(f), false);
+  });
+
+  addUrlBtn.addEventListener('click', () => {
+    const u = urlInput.value.trim();
+    if (!u) return;
+    addSource(u.split('/').pop() || u, u, true);
+    urlInput.value = '';
+  });
+
+  masterSel.addEventListener('change', () => setMaster(masterSel.value));
+
+  rate.addEventListener('input', () => setRate(rate.value));
+  frameStep.addEventListener('change', () => { state.frameStep = Number(frameStep.value) || (1/30); savePrefs(); });
+  cols.addEventListener('change', () => {
+    const n = Math.max(1, Math.min(6, Number(cols.value) || 2));
+    state.columns = n;
+    grid.style.setProperty('--columns', n);
+    document.documentElement.style.setProperty('--columns', n);
+    savePrefs();
+  });
+
+  muteAll.addEventListener('change', () => setMuted(muteAll.checked));
+  loopAll.addEventListener('change', () => setLoop(loopAll.checked));
+  fitCover.addEventListener('change', () => setCover(fitCover.checked));
+  syncOn.addEventListener('change', () => { state.syncOn = syncOn.checked; savePrefs(); });
+
+  document.getElementById('toggleHelp').addEventListener('click', () => {
+    document.getElementById('helpBox').classList.toggle('hidden');
+  });
+
+  // Playback buttons
+  document.getElementById('playAll').addEventListener('click', playAll);
+  document.getElementById('pauseAll').addEventListener('click', pauseAll);
+  document.getElementById('stopAll').addEventListener('click', stopAll);
+  document.getElementById('back1').addEventListener('click', () => setTime(Math.max(0, getMaster()?.video.currentTime - 1)));
+  document.getElementById('fwd1').addEventListener('click', () => setTime((getMaster()?.video.currentTime || 0) + 1));
+  document.getElementById('back5').addEventListener('click', () => setTime(Math.max(0, getMaster()?.video.currentTime - 5)));
+  document.getElementById('fwd5').addEventListener('click', () => setTime((getMaster()?.video.currentTime || 0) + 5));
+  document.getElementById('stepPrev').addEventListener('click', () => { pauseAll(); setTime(Math.max(0, (getMaster()?.video.currentTime || 0) - state.frameStep)); });
+  document.getElementById('stepNext').addEventListener('click', () => { pauseAll(); setTime((getMaster()?.video.currentTime || 0) + state.frameStep); });
+
+  // Scrubbing
+  let scrubbing = false;
+  scrub.addEventListener('input', () => {
+    scrubbing = true;
+    setTime(Number(scrub.value) || 0);
+    curTime.textContent = fmtTime(Number(scrub.value) || 0);
+  });
+  scrub.addEventListener('change', () => { scrubbing = false; resync(true); });
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+    const master = getMaster();
+    if (!master) return;
+    if (e.code === 'Space') { e.preventDefault(); master.video.paused ? playAll() : pauseAll(); }
+    else if (e.code === 'ArrowLeft') { e.preventDefault(); setTime(Math.max(0, master.video.currentTime - (e.shiftKey ? 5 : 1))); }
+    else if (e.code === 'ArrowRight') { e.preventDefault(); setTime(master.video.currentTime + (e.shiftKey ? 5 : 1)); }
+    else if (e.key === ',') { e.preventDefault(); pauseAll(); setTime(Math.max(0, master.video.currentTime - state.frameStep)); }
+    else if (e.key === '.') { e.preventDefault(); pauseAll(); setTime(master.video.currentTime + state.frameStep); }
+    else if (e.key === '[') { e.preventDefault(); setRate(Math.max(0.25, state.rate - 0.05)); rate.value = state.rate; }
+    else if (e.key === ']') { e.preventDefault(); setRate(Math.min(2.0, state.rate + 0.05)); rate.value = state.rate; }
+    else if (e.key.toLowerCase() === 'm') { e.preventDefault(); muteAll.checked = !muteAll.checked; setMuted(muteAll.checked); }
+    else if (e.key.toLowerCase() === 'l') { e.preventDefault(); loopAll.checked = !loopAll.checked; setLoop(loopAll.checked); }
+  });
+
+  // Animation loop to keep things tight when syncing is on
+  function tick() {
+    if (state.syncOn) resync(false);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Restore prefs
+  loadPrefs();
+})();
+</script>
+</body>
+</html>
