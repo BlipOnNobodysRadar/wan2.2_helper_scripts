@@ -1,0 +1,91 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LM Studio Video Captioner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="layout">
+    <main class="chat">
+      <h2>Multiturn chat outputs, separated between user and LLM</h2>
+
+      <div id="chatLog" class="chatlog"></div>
+
+      <div class="composer">
+        <label class="filedrop">
+          <input type="file" id="clipInput" accept="video/*">
+          <span>message/drop in image or clip attachment</span>
+        </label>
+        <button id="sendBtn">Send & Caption</button>
+      </div>
+    </main>
+
+    <aside class="side">
+      <section class="card">
+        <h3>system prompt</h3>
+        <textarea id="systemPrompt" rows="6">You caption short videos for dataset creation. Only return the caption (no prelude, no quotes). Be concrete, specific, and neutral. If multiple actions occur, summarize succinctly. Label any texts or watermarks if they are visible.
+
+The caption should be written in plain language within two to three paragraphs and generally follow the general rules below.
+
+Prompt = Subject（Subject Description） + Scene（Scene Description） + Motion（Motion Description）+Aesthetic Contro   + Stylization
+Subject Description : Details about the subject’s appearance, described using adjectives or short phrases. For example: "A black-haired Miao girl wearing ethnic minority clothing" or "A flying fairy from another world, dressed in tattered yet elegant attire, with a pair of strange wings made of rubble fragments." If you recognize even more detailed descriptions such as the exact type of clothing and its colors, use the more specific description instead.
+Scene Description : Details about the environment where the subject is located, described using adjectives or short phrases.
+Motion Description : Describes the characteristics of movement, including amplitude, speed, and effects of the motion. Examples: "Violently swaying," "Slowly moving," or "Shattering glass." If a reaction occur, describe it too: "A hand slaps down on the jello, causing the jello to jiggle and wobble from the impact."
+Aesthetic Control: Includes elements like Light Source, Lighting Environment, Shot Size (Framing), Camera Angle, Lens, and Camera Movement.
+Stylization : Describes the visual style of the scene, such as "Cyberpunk," "Line-drawing illustration," or "Post-apocalyptic style."</textarea>
+      </section>
+
+      <section class="card">
+        <h3>settings</h3>
+
+        <div class="row">
+          <label>Model:</label>
+          <input id="modelName" placeholder="qwen2.5-vl-32b-instruct">
+        </div>
+
+        <div class="row">
+          <label>Number of frames:</label>
+          <input id="numFrames" type="number" min="1" max="32" value="5">
+        </div>
+
+        <div class="row">
+          <label>Frame Sampling Type:</label>
+          <select id="samplingType">
+            <option value="uniform" selected>uniform</option>
+            <option value="head">head (first N)</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>Assistant response prefill:</label>
+          <input id="prefill" placeholder="(optional prefix, continues from here)">
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Batch Process Args</h3>
+        <div class="row">
+          <label>Target folder:</label>
+          <input id="targetFolder" placeholder="/path/to/clips">
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="overwrite"> Overwrite existing captions?</label>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="prependExisting"> Prepend to existing captions file?</label>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="notifyDone" checked> Notify when done</label>
+        </div>
+        <button id="startBatch">Start Batch Process / Cancel</button>
+        <pre id="batchLog" class="log"></pre>
+      </section>
+    </aside>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

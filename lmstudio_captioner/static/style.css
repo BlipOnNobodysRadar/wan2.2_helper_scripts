@@ -1,0 +1,58 @@
+
+:root {
+  --bg: #0f1115;
+  --panel: #151923;
+  --text: #d7d9e0;
+  --muted: #8a90a6;
+  --accent: #5ea0ff;
+  --border: #23283a;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; padding: 16px; }
+
+.chat {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+  display: flex; flex-direction: column; min-height: 80vh;
+}
+.chat h2 { margin: 0 0 12px; font-size: 18px; color: var(--muted); }
+
+.chatlog {
+  flex: 1; overflow: auto; border: 1px dashed var(--border); border-radius: 8px;
+  padding: 12px; background: #0d0f16;
+}
+
+.msg { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; max-width: 80%; white-space: pre-wrap; }
+.msg.user { background: #1b2131; align-self: flex-end; }
+.msg.assistant { background: #151d29; border: 1px solid #1f2740; }
+
+.composer { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }
+.filedrop {
+  display: grid; place-items: center; text-align: center; background: #0d0f16;
+  border: 2px dashed var(--border); color: var(--muted); padding: 16px; border-radius: 8px; cursor: pointer;
+}
+.filedrop input { display: none; }
+.composer button {
+  background: var(--accent); color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer;
+}
+
+.side { display: grid; gap: 16px; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+}
+.card h3 { margin: 0 0 8px; color: var(--muted); font-size: 16px; }
+.card .row { display: grid; gap: 6px; margin-bottom: 10px; }
+.card input[type="text"], .card input[type="number"], .card textarea, .card select {
+  width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #0d0f16; color: var(--text);
+}
+
+.log {
+  background: #0d0f16; border: 1px solid var(--border); padding: 8px; border-radius: 6px;
+  max-height: 240px; overflow: auto; color: #c6cbe1;
+}
