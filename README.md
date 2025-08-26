@@ -14,6 +14,7 @@ rely on `ffmpeg`/`ffprobe`; some also require ImageMagick or Perl.
 | `extract_first-last_frames.sh` | Extract first and last frames (with fallbacks for reliable last-frame capture) and create accompanying `.txt` files. |
 | `grab_5_frames.sh` | Grab five evenly spaced frames from a single video file. |
 | `merge_lastframe_into_main.sh` | Merge caption text from `_lastFrame.txt` files into the main caption files, normalizing spacing. |
+| `lmstudio_captioner` | Local web app that captions videos via LM Studio's API. Assistant prefill only appears as a separate pretend reply due to LM Studio API limits; load a model in LM Studio, enable the API in the Developer tab, and paste the model name into the app. |
 
 ## License
 
