@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# extract_first_and_last_frames.sh
+# Extract both the first and last frames from every MP4 in the current
+# directory, writing matching .txt files. Employs several strategies to
+# reliably grab the final frame.
 set -euo pipefail
 shopt -s nullglob nocaseglob
 

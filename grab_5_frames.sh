@@ -1,8 +1,7 @@
-
 #!/usr/bin/env bash
-# grab_5_frames.sh
-# Extract 5 evenly-distributed frames from a video using ffmpeg/ffprobe.
-# Output files: <input_basename>_frame1.jpg ... _frame5.jpg (in the same folder)
+# Extract five evenly spaced frames from a video using ffmpeg and ffprobe.
+# Output files are named <input_basename>_frame1.jpg through
+# <input_basename>_frame5.jpg in the same folder.
 
 set -euo pipefail
 

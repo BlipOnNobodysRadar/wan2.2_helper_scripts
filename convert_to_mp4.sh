@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# TL;DR slap this in a directory with animated gifs, animated webps, and non-mp4 video files you want to convert into .mp4 files. Then run it, converts all to mp4.
-# Extended: convert_webp_to_mp4.sh (patched)
-# - Robust GIF/WEBP → MP4 conversion. WEBP uses ImageMagick path by default.
-# - General video → MP4 with smart-copy option.
-# - High-quality x264 defaults.
-# - If no inputs/dirs, runs on the script's directory (NON-RECURSIVE).
+# Batch-convert animated GIF/WEBP images and numerous video formats to
+# high-quality MP4. Uses ffmpeg with sensible x264 defaults and can
+# smart-copy already compatible streams. If no inputs are provided, the
+# script processes files in its own directory.
 
 set -euo pipefail
 shopt -s nullglob

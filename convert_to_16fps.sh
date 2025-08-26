@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Convert video files in the current directory to constant 16fps MP4s
+# using ffmpeg. Tweak settings via environment variables; optional
+# h264_nvenc GPU acceleration.
 set -euo pipefail
 # Match files case-insensitively and ignore non-matches
 shopt -s nullglob nocaseglob
