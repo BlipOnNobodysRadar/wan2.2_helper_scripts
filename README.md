@@ -7,13 +7,17 @@ rely on `ffmpeg`/`ffprobe`; some also require ImageMagick or Perl. Windows users
 
 | Script | Description |
 | --- | --- |
-| `combineFirstLastImages.sh` | Combine first and last frame images into a single composite separated by a line. Requires ImageMagick. |
+| `condenseMP4s_to_target_frames.sh` | Condense MP4s longer than a target frame count down to that length at constant FPS. Outputs to `condensed/`. |
 | `convert_to_16fps.sh` | Convert videos to constant 16 fps MP4 files. Customizable via env vars; optional GPU acceleration. |
 | `convert_to_mp4.sh` | Batch convert animated GIF/WEBP and other video formats to MP4 with high-quality defaults and smart copy. |
 | `extract_first_frames.sh` | Extract the first frame of each MP4 and create matching empty `.txt` files. |
 | `extract_first-last_frames.sh` | Extract first and last frames (with fallbacks for reliable last-frame capture) and create accompanying `.txt` files. |
 | `grab_5_frames.sh` | Grab five evenly spaced frames from a single video file. |
+| `make_palindromes.sh` | Create forward+reverse palindromes for short clips, optionally condensing to a target frame count. |
 | `merge_lastframe_into_main.sh` | Merge caption text from `_lastFrame.txt` files into the main caption files, normalizing spacing. |
+| `move_under_frames.sh` | Move MP4s with fewer than N frames into `./under_N_frames/`. |
+| `move_within_x_resolution.sh` | Move MP4s whose average dimension `(W+H)/2` is below a threshold into `./within_X_resolution/`. |
+| `reverse_videos_max_frames.sh` | Reverse videos up to N frames and write them to `./reversed/`. Longer clips are skipped. |
 | `lmstudio_captioner` | Local web app that captions videos via LM Studio's API. Assistant prefill only appears as a separate pretend reply due to LM Studio API limits; load a model in LM Studio, enable the API in the Developer tab, and paste the model name into the app. |
 | `multi_video_sync_compare.html` | Browser-based tool for loading multiple videos, adjusting per-video offsets, and keeping playback synchronized for side-by-side comparison. |
 
